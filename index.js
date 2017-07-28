@@ -4,6 +4,7 @@ var fs = require('fs');
 var mysql = require('mysql');
 var express = require('express');
 var app = express();
+var bodyParser = require('body-parser');
 
 var id;
 var random;
@@ -12,6 +13,9 @@ var randomQuote = "Quote is not yet initialized.";
 var queryResult;
 var randomID;
 var NumberOfQuotes;
+
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 var knex = require('knex')({
   client: 'mysql',
@@ -31,19 +35,73 @@ var Quote = bookshelf.Model.extend({
   tableName: 'AbMe.quotes'
 });
 
-// Select * from 'quotes'
+// Select * from 'quotes' order by rand():
 app.get('/random', function(req, res){
+	bookshelf.knex.raw(
+    'SELECT * FROM AbMe.quotes ORDER BY rand() LIMIT 1'
+    )
+  .then(data => {
+	console.log(data[0][0]);
+	res.json(data[0][0]);
+  })
+  .catch(err => {
+    console.log(err);
+  });
+  /* OLD METHOD: select * from 'quotes' where id = randomID
 	new Quote({id : getRandomNumber()})
 	.fetch()
 	.then(function(model) {
 	console.log("Text is: " + model.get('text'));
-	res.send(model.get('text'));
+	res.json(model);
   }).catch(function(error) {
+      console.log(error);
+      res.send('An error occured');
+    });*/
+});
+
+// Select * from 'quotes'
+app.get('/all', function(req, res) {
+  new Quote().fetchAll()
+    .then(function(quotes) {
+      res.json(quotes);
+    }).catch(function(error) {
       console.log(error);
       res.send('An error occured');
     });
 });
 
+// Add a new quote:
+app.post('/add', function (req, res) {
+	new Quote({
+      text: req.body.quotetext
+    })
+    .save()
+    .then(function (quote) {
+		res.json(quote);
+    })
+    .catch(function (err) {
+		res.json(err);
+    }); 
+  });
+
+// Delete a quote:
+app.post('/delete', function (req, res) {
+    new Quote({id: req.body.id})
+    .fetch({require: true})
+    .then(function (quote) {
+      quote.destroy()
+      .then(function () {
+        res.json({error: true, data: {message: 'Quote successfully deleted'}});
+      })
+      .catch(function (err) {
+        res.status(500).json({error: true, data: {message: err.message}});
+      });
+    })
+    .catch(function (err) {
+      res.status(500).json({error: true, data: {message: err.message}});
+    });
+ });  
+  
 // Get number of quotes in table:
 Quote.forge()
   .count()
