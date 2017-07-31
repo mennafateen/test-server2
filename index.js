@@ -4,6 +4,11 @@ var fs = require('fs');
 var mysql = require('mysql');
 var express = require('express');
 var app = express();
+var bodyParser = require('body-parser');
+var passport = require('passport')
+var LocalStrategy = require('passport-local').Strategy;
+var flash = require('connect-flash');
+var session = require('express-session');
 
 var id;
 var random;
@@ -13,6 +18,16 @@ var queryResult;
 var randomID;
 var NumberOfQuotes;
 
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(passport.initialize());
+//app.use(passport.session());
+app.use(session({ cookie: { maxAge: 60000 }, 
+                  secret: 'woot',
+                  resave: false, 
+                  saveUninitialized: false}));
+app.use(flash());
+		
 var knex = require('knex')({
   client: 'mysql',
   connection: {
@@ -31,19 +46,150 @@ var Quote = bookshelf.Model.extend({
   tableName: 'AbMe.quotes'
 });
 
-// Select * from 'quotes'
+var User = bookshelf.Model.extend({
+	tableName: 'AbMe.users'
+});
+
+
+// Implementing passport.serializeUser and passport.deserializeUser:
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
+
+// Select * from 'quotes' order by rand():
 app.get('/random', function(req, res){
+	bookshelf.knex.raw(
+    'SELECT * FROM AbMe.quotes ORDER BY rand() LIMIT 1'
+    )
+  .then(data => {
+	console.log(data[0][0]);
+	res.json(data[0][0]);
+  })
+  .catch(err => {
+    console.log(err);
+  });
+});
+
+  
+// Check password validity:
+function isValidPassword(user, password) {
+	return user.get("userPW") === password;
+}
+
+var jsonify = function (ele) { return ele.toJSON(); };
+
+
+// Passport -> Find user: 
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+	 User
+		.where({ userID: username })
+		.fetch()
+		.then(function(user) {
+			if (!isValidPassword(user, password)) {
+				console.log('Incorrect pw!');
+				return done(null, false, { message: 'Invalid username or password ' });
+			}
+			
+			return done(null, user.toJSON());
+		})
+		.catch(function(err) {
+			console.log(err);
+		});
+  }  
+));
+/*
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findOne({ 'userID': username }, function(err, user) {
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!isValidPassword(user, password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });
+  }
+));
+*/  
+  
+// Base route:
+app.get('/', function(req, res){
+	res.send('Hello, User!');
+	res.end();
+});
+
+// GET login route:
+app.get('/loginfailure', function(req, res){
+	res.send('Please log in using correct data!');
+	res.end();
+});
+
+// Login route:
+app.post('/login', passport.authenticate('local', { successRedirect: '/',
+													failureRedirect: '/loginfailure',
+													failureFlash: true }));
+													
+  /* OLD RANDOM METHOD: select * from 'quotes' where id = randomID
 	new Quote({id : getRandomNumber()})
 	.fetch()
 	.then(function(model) {
 	console.log("Text is: " + model.get('text'));
-	res.send(model.get('text'));
+	res.json(model);
   }).catch(function(error) {
+      console.log(error);
+      res.send('An error occured');
+    });*/
+
+// Select * from 'quotes'
+app.get('/all', function(req, res) {
+  new Quote().fetchAll()
+    .then(function(quotes) {
+      res.json(quotes);
+    }).catch(function(error) {
       console.log(error);
       res.send('An error occured');
     });
 });
 
+// Add a new quote route:
+app.post('/add', function (req, res) {
+	new Quote({
+      text: req.body.quotetext
+    })
+    .save()
+    .then(function (quote) {
+		res.json(quote);
+    })
+    .catch(function (err) {
+		res.json(err);
+    }); 
+  });
+
+// Delete a quote route:
+app.post('/delete', function (req, res) {
+    new Quote({id: req.body.id})
+    .fetch({require: true})
+    .then(function (quote) {
+      quote.destroy()
+      .then(function () {
+        res.json({error: true, data: {message: 'Quote successfully deleted'}});
+      })
+      .catch(function (err) {
+        res.status(500).json({error: true, data: {message: err.message}});
+      });
+    })
+    .catch(function (err) {
+      res.status(500).json({error: true, data: {message: err.message}});
+    });
+ });  
+  
 // Get number of quotes in table:
 Quote.forge()
   .count()
