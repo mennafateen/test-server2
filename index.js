@@ -275,6 +275,6 @@ var server = http.createServer(function(req, res){
 server.listen(8888);
 */
 
-app.listen(8888, function(){
+app.listen(8000, function(){
 	console.log('Server is running...');	
 });
