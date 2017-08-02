@@ -77,7 +77,13 @@ app.get('/random', function(req, res){
   
 // Check password validity:
 function isValidPassword(user, password) {
-	return user.get("userPW") === password;
+	var valid;
+	
+	if(user == null) valid = false;
+	else return user.get("userPW") === password;
+	console.log(user);
+	console.log(valid);
+	
 }
 
 var jsonify = function (ele) { return ele.toJSON(); };
