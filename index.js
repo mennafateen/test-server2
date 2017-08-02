@@ -78,10 +78,12 @@ app.get('/random', function(req, res){
 // Check password validity:
 function isValidPassword(user, password) {
 	var valid;
-	
+		console.log("user details in validpw fn: " + user);
+	console.log("hello?");
 	if(user == null) valid = false;
 	else return user.get("userPW") === password;
-	console.log(user);
+	console.log("im still in here, so user is null");
+	console.log("null user mafrood: " + user);
 	console.log(valid);
 	
 }
@@ -101,8 +103,8 @@ passport.use(new LocalStrategy(
 				console.log('Incorrect pw!');
 				return done(null, false, { message: 'Invalid username or password ' });
 			}
-			
-			return done({status: 401}, user.toJSON());
+			return done(user.toJSON());
+			//return done({status: 401}, user.toJSON());
 		})
 		.catch(function(err) {
 			console.log(err);
@@ -144,11 +146,16 @@ app.get('/loginfailure', function(req, res){
 });
 
 // Login route:
+
 app.post('/login', function(req, res, next) {
-  passport.authenticate('local', function(err, user, info) {
+  passport.authenticate('local', function(user, err, info) {
 	if(user == null) {return res.json({status:401});}
-    if (err) { return res.json({status:401}); }
-    if (!user) { return res.json({status: 404})}
+	console.log("user details in route fn:" + user);
+    if (err) { 
+		console.log("error");	
+		return res.json({status:401}); 
+		}
+    //if (!user) { return res.json({status: 404})}
     req.logIn(user, function(err) {
       if (err) { return next(err); }
       return res.json({status: 200});
@@ -159,11 +166,12 @@ app.post('/login', function(req, res, next) {
 /*
 // Login route:
 app.post('/login', passport.authenticate('local', function(req, res) {
-	res.redirect('/loginsuccess');
+	//res.redirect('/loginsuccess');
+	res.json({msg: "whateever"});
 	console.log("LOGGED IN!");
 	res.end();
 }));
-	*/											
+*/	
   /* OLD RANDOM METHOD: select * from 'quotes' where id = randomID
 	new Quote({id : getRandomNumber()})
 	.fetch()
@@ -180,6 +188,16 @@ app.get('/all', function(req, res) {
   new Quote().fetchAll()
     .then(function(quotes) {
       res.json(quotes);
+    }).catch(function(error) {
+      console.log(error);
+      res.send('An error occured');
+    });
+});
+
+app.get('/allusers', function(req, res) {
+  new User().fetchAll()
+    .then(function(users) {
+      res.json(users);
     }).catch(function(error) {
       console.log(error);
       res.send('An error occured');
