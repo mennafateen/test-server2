@@ -138,7 +138,7 @@ app.get('/loginfailure', function(req, res){
 // Login route:
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
-    if (err) { return next(err); }
+    if (err) { return res.json({status:401}); }
     if (!user) { return res.json({status: 404})}
     req.logIn(user, function(err) {
       if (err) { return next(err); }
