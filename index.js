@@ -139,10 +139,10 @@ app.get('/loginfailure', function(req, res){
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }
-    if (!user) { return res.redirect('/loginfailure'); }
+    if (!user) { return res.json({status: 404})}
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      return res.redirect('/loginsuccess');
+      return res.json({status: 200});
     });
   })(req, res, next);
 });
