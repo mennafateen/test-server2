@@ -91,6 +91,7 @@ passport.use(new LocalStrategy(
 		.fetch()
 		.then(function(user) {
 			if (!isValidPassword(user, password)) {
+				
 				console.log('Incorrect pw!');
 				return done(null, false, { message: 'Invalid username or password ' });
 			}
@@ -138,6 +139,7 @@ app.get('/loginfailure', function(req, res){
 // Login route:
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
+	if(user == null) {return res.json({status:401});}
     if (err) { return res.json({status:401}); }
     if (!user) { return res.json({status: 404})}
     req.logIn(user, function(err) {
