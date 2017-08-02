@@ -138,7 +138,7 @@ app.get('/loginfailure', function(req, res){
 // Login route:
 app.post('/login', passport.authenticate('local', function(req, res) {
 	res.json({ status: 200 });
-});
+}));
 													
   /* OLD RANDOM METHOD: select * from 'quotes' where id = randomID
 	new Quote({id : getRandomNumber()})
