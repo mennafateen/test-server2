@@ -88,7 +88,7 @@ passport.use(new LocalStrategy(
   function(username, password, done) {
 	 User
 		.where({ userID: username })
-		.fetch({require = true})
+		.fetch()
 		.then(function(user) {
 			if (!isValidPassword(user, password)) {
 				
