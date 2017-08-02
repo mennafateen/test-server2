@@ -198,7 +198,29 @@ app.post('/add', function (req, res) {
     .catch(function (err) {
 		res.json(err);
     }); 
-  });
+});
+
+// Sign up:
+app.post('/signup', function (req, res) {
+	new User({
+      firstName: req.body.firstname,
+	  lastName: req.body.lastname,
+	  email: req.body.email,
+	  userID: req.body.username,
+	  userPW: req.body.password
+    })
+    .save()
+    .then(function (user) {
+		res.json(user);
+    })
+    .catch(function (err) {
+		//res.json(err);
+		if(err.errno == 1062){
+			console.log("Duplicate entry!");
+			res.send({message: "Username exists."});
+		}
+    }); 
+ });
 
 // Delete a quote route:
 app.post('/delete', function (req, res) {
