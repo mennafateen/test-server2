@@ -136,10 +136,25 @@ app.get('/loginfailure', function(req, res){
 });
 
 // Login route:
+app.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) { return next(err); }
+    if (!user) { return res.redirect('/loginfailure'); }
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      return res.redirect('/loginsuccess');
+    });
+  })(req, res, next);
+});
+
+/*
+// Login route:
 app.post('/login', passport.authenticate('local', function(req, res) {
-	res.json({ status: 200 });
+	res.redirect('/loginsuccess');
+	console.log("LOGGED IN!");
+	res.end();
 }));
-													
+	*/											
   /* OLD RANDOM METHOD: select * from 'quotes' where id = randomID
 	new Quote({id : getRandomNumber()})
 	.fetch()
