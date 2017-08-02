@@ -88,7 +88,7 @@ passport.use(new LocalStrategy(
   function(username, password, done) {
 	 User
 		.where({ userID: username })
-		.fetch()
+		.fetch({require = true})
 		.then(function(user) {
 			if (!isValidPassword(user, password)) {
 				
@@ -96,10 +96,11 @@ passport.use(new LocalStrategy(
 				return done(null, false, { message: 'Invalid username or password ' });
 			}
 			
-			return done(null, user.toJSON());
+			return done({status: 401}, user.toJSON());
 		})
 		.catch(function(err) {
 			console.log(err);
+			
 		});
   }  
 ));
