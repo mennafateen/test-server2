@@ -125,14 +125,20 @@ app.get('/', function(req, res){
 	res.end();
 });
 
-// GET login route:
+// GET login route failure:
+app.get('/loginsuccess', function(req, res){	
+	res.send('invalid-login');
+	res.end();
+});
+
+// GET login route success:
 app.get('/loginfailure', function(req, res){
-	res.send('Please log in using correct data!');
+	res.send('valid-login');
 	res.end();
 });
 
 // Login route:
-app.post('/login', passport.authenticate('local', { successRedirect: '/',
+app.post('/login', passport.authenticate('local', { successRedirect: '/loginsuccess',
 													failureRedirect: '/loginfailure',
 													failureFlash: true }));
 													
