@@ -127,13 +127,13 @@ app.get('/', function(req, res){
 
 // GET login route failure:
 app.get('/loginsuccess', function(req, res){	
-	res.send('invalid-login');
+	res.json({"status": 200});
 	res.end();
 });
 
 // GET login route success:
 app.get('/loginfailure', function(req, res){
-	res.send('valid-login');
+	res.send({"status": 404});
 	res.end();
 });
 
