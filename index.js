@@ -158,7 +158,7 @@ app.post('/login', function(req, res, next) {
     //if (!user) { return res.json({status: 404})}
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      return res.json({status: 200});
+      return res.json([{status: 200}, user]);
     });
   })(req, res, next);
 });
