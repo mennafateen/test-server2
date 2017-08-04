@@ -132,7 +132,7 @@ passport.use(new LocalStrategy(
   
 var path = require("path");
 app.get('/home', function(req, res) {
-	res.sendFile(path.join(__dirname + '/test-app/home.html'));
+	res.render(path.join(__dirname + '/test-app/home.html'));
 });	
 // Base route:
 app.get('/', function(req, res){
@@ -154,11 +154,11 @@ app.get('/loginfailure', function(req, res){
 
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(user, err, info) {
-	if(user == null) {return res.json({status:401});}
+	if(user == null) {return res.json([{status:401}, null]);}
 	console.log("user details in route fn:" + user);
     if (err) { 
 		console.log("error");	
-		return res.json({status:401}); 
+		return res.json([{status:401}, null]); 
 		}
     //if (!user) { return res.json({status: 404})}
     req.logIn(user, function(err) {
