@@ -27,6 +27,7 @@ app.use(session({ cookie: { maxAge: 60000 },
                   resave: false, 
                   saveUninitialized: false}));
 app.use(flash());
+app.use(express.static('test-app'));
 		
 var knex = require('knex')({
   client: 'mysql',
