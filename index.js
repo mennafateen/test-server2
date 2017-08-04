@@ -132,7 +132,7 @@ passport.use(new LocalStrategy(
   
 var path = require("path");
 app.get('/home', function(req, res) {
-	res.render(path.join(__dirname + '/test-app/home.html'));
+	res.sendFile(path.join(__dirname + '/test-app/home.html'));
 });	
 // Base route:
 app.get('/', function(req, res){
