@@ -129,6 +129,10 @@ passport.use(new LocalStrategy(
 ));
 */  
   
+var path = require("path");
+app.get('/home', function(req, res) {
+	res.sendFile(path.join(__dirname + '/test-app/home.html'));
+});	
 // Base route:
 app.get('/', function(req, res){
 	res.send('Hello, User!');
